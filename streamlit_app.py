@@ -6,7 +6,7 @@ import boto3
 
 # Load environment variables from .env file if needed
 # load_dotenv()
-st.balloons
+st.balloons()
 
 # Read AWS credentials from environment variables
 aws_access_key_id = st.secrets['AWS_ACCESS_KEY_ID']
@@ -48,7 +48,7 @@ if plot_type == 'UMAP':
     if len(variables_to_plot) == 1:
         axs = [axs]
     for ax, gene in zip(axs, variables_to_plot):
-        sc.pl.umap(adata1, color=gene, ax=ax, show=False, wspace=0.4)
+        sc.pl.umap(adata1, color=gene, ax=ax, show=False, wspace=0.6)
     st.pyplot(fig)
 elif plot_type == 'Spatial':
     st.subheader('Spatial Plot')
@@ -56,7 +56,7 @@ elif plot_type == 'Spatial':
     if len(variables_to_plot) == 1:
         axs = [axs]
     for ax, gene in zip(axs, variables_to_plot):
-        sc.pl.spatial(adata1, color=gene, ax=ax, show=False, wspace=0.4)
+        sc.pl.spatial(adata1, color=gene, ax=ax, show=False, wspace=0.6)
     st.pyplot(fig)
 else:
     st.write("Select a plot type from the sidebar to begin.")
