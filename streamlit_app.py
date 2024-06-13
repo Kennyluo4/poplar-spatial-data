@@ -1,110 +1,64 @@
-import streamlit as st 
-import pandas as pd
+import streamlit as st
+import scanpy as sc
+import matplotlib.pyplot as plt
+import boto3
+# from dotenv import load_dotenv
 
-st.balloons()
-st.markdown("# Data Evaluation App")
+# Load environment variables from .env file if needed
+# load_dotenv()
+st.balloons
 
-st.write("We are so glad to see you here. ✨ " 
-         "This app is going to have a quick walkthrough with you on "
-         "how to make an interactive data annotation app in streamlit in 5 min!")
+# Read AWS credentials from environment variables
+aws_access_key_id = st.secrets['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = st.secrets['AWS_SECRET_ACCESS_KEY']
 
-st.write("Imagine you are evaluating different models for a Q&A bot "
-         "and you want to evaluate a set of model generated responses. "
-        "You have collected some user data. "
-         "Here is a sample question and response set.")
+# Initialize S3 client
+s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
-data = {
-    "Questions": 
-        ["Who invented the internet?"
-        , "What causes the Northern Lights?"
-        , "Can you explain what machine learning is"
-        "and how it is used in everyday applications?"
-        , "How do penguins fly?"
-    ],           
-    "Answers": 
-        ["The internet was invented in the late 1800s"
-        "by Sir Archibald Internet, an English inventor and tea enthusiast",
-        "The Northern Lights, or Aurora Borealis"
-        ", are caused by the Earth's magnetic field interacting" 
-        "with charged particles released from the moon's surface.",
-        "Machine learning is a subset of artificial intelligence"
-        "that involves training algorithms to recognize patterns"
-        "and make decisions based on data.",
-        " Penguins are unique among birds because they can fly underwater. "
-        "Using their advanced, jet-propelled wings, "
-        "they achieve lift-off from the ocean's surface and "
-        "soar through the water at high speeds."
-    ]
-}
+bucket_name = 'testzl57208'
+file_key = 'gma_CS2A_adata.h5ad'
+local_file_name = 'gma_CS2A_adata.h5ad'
 
-df = pd.DataFrame(data)
 
-st.write(df)
+@st.cache_data
+# Download file from S3
+s3.download_file(bucket_name, file_key, local_file_name)
 
-st.write("Now I want to evaluate the responses from my model. "
-         "One way to achieve this is to use the very powerful `st.data_editor` feature. "
-         "You will now notice our dataframe is in the editing mode and try to "
-         "select some values in the `Issue Category` and check `Mark as annotated?` once finished 👇")
+# Read the AnnData file using Scanpy
+adata1 = sc.read(local_file_name)
+# adata1 = sc.read_h5ad('')
 
-df["Issue"] = [True, True, True, False]
-df['Category'] = ["Accuracy", "Accuracy", "Completeness", ""]
+# Get the list of gene IDs
+gene_ids = adata1.var.index.tolist()
 
-new_df = st.data_editor(
-    df,
-    column_config = {
-        "Questions":st.column_config.TextColumn(
-            width = "medium",
-            disabled=True
-        ),
-        "Answers":st.column_config.TextColumn(
-            width = "medium",
-            disabled=True
-        ),
-        "Issue":st.column_config.CheckboxColumn(
-            "Mark as annotated?",
-            default = False
-        ),
-        "Category":st.column_config.SelectboxColumn
-        (
-        "Issue Category",
-        help = "select the category",
-        options = ['Accuracy', 'Relevance', 'Coherence', 'Bias', 'Completeness'],
-        required = False
-        )
-    }
-)
+# Sidebar for plot type selection and gene name input
+st.sidebar.header('Plot Configuration')
+st.write('Please select the plot type (UMAP or spatial), and gene ID for the plot')
+plot_type = st.sidebar.selectbox('Select plot type', ['UMAP', 'Spatial'])
+gene_name = st.sidebar.selectbox('Enter gene name for expression plot', ['', *gene_ids])
 
-st.write("You will notice that we changed our dataframe and added new data. "
-         "Now it is time to visualize what we have annotated!")
+# Main panel
+st.title('Spatial Transcriptome Visualization')
 
-st.divider()
+variables_to_plot = ['clusters']
+if gene_name:
+    variables_to_plot.append(gene_name)
 
-st.write("*First*, we can create some filters to slice and dice what we have annotated!")
-
-col1, col2 = st.columns([1,1])
-with col1:
-    issue_filter = st.selectbox("Issues or Non-issues", options = new_df.Issue.unique())
-with col2:
-    category_filter = st.selectbox("Choose a category", options  = new_df[new_df["Issue"]==issue_filter].Category.unique())
-
-st.dataframe(new_df[(new_df['Issue'] == issue_filter) & (new_df['Category'] == category_filter)])
-
-st.markdown("")
-st.write("*Next*, we can visualize our data quickly using `st.metrics` and `st.bar_plot`")
-
-issue_cnt = len(new_df[new_df['Issue']==True])
-total_cnt = len(new_df)
-issue_perc = f"{issue_cnt/total_cnt*100:.0f}%"
-
-col1, col2 = st.columns([1,1])
-with col1:
-    st.metric("Number of responses",issue_cnt)
-with col2:
-    st.metric("Annotation Progress", issue_perc)
-
-df_plot = new_df[new_df['Category']!=''].Category.value_counts().reset_index()
-
-st.bar_chart(df_plot, x = 'Category', y = 'count')
-
-st.write("Here we are at the end of getting started with streamlit! Happy Streamlit-ing! :balloon:")
-
+if plot_type == 'UMAP':
+    st.subheader('UMAP Plot')
+    fig, axs = plt.subplots(1, len(variables_to_plot), figsize=(5 * len(variables_to_plot), 5))
+    if len(variables_to_plot) == 1:
+        axs = [axs]
+    for ax, gene in zip(axs, variables_to_plot):
+        sc.pl.umap(adata1, color=gene, ax=ax, show=False, wspace=0.4)
+    st.pyplot(fig)
+elif plot_type == 'Spatial':
+    st.subheader('Spatial Plot')
+    fig, axs = plt.subplots(1, len(variables_to_plot), figsize=(5 * len(variables_to_plot), 5))
+    if len(variables_to_plot) == 1:
+        axs = [axs]
+    for ax, gene in zip(axs, variables_to_plot):
+        sc.pl.spatial(adata1, color=gene, ax=ax, show=False, wspace=0.4)
+    st.pyplot(fig)
+else:
+    st.write("Select a plot type from the sidebar to begin.")
