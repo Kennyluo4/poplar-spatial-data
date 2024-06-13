@@ -16,11 +16,9 @@ aws_secret_access_key = st.secrets['AWS_SECRET_ACCESS_KEY']
 s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
 
 bucket_name = 'testzl57208'
-file_key = 'gma_CS2A_adata.h5ad'
-local_file_name = 'gma_CS2A_adata.h5ad'
+file_key = 'poplar_axl_bud_A_adata.h5ad'
+local_file_name = 'poplar_axl_bud_A_adata.h5ad'
 
-
-@st.cache_data
 # Download file from S3
 s3.download_file(bucket_name, file_key, local_file_name)
 
