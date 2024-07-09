@@ -30,7 +30,7 @@ def get_adata():
     return adata1
 
 adata = get_adata()
-# adata1 = sc.read_h5ad('/Users/ziliangluo/Library/CloudStorage/OneDrive-UniversityofGeorgia/workspace/poplar_spatial_atlas/saved_obj/poplar_axl_bud_A_adata.h5ad')
+# adata = sc.read_h5ad('/Users/ziliangluo/Library/CloudStorage/OneDrive-UniversityofGeorgia/workspace/poplar_spatial_atlas/saved_obj/poplar_axl_bud_A_adata.h5ad')
 
 # Get the list of gene IDs
 gene_ids = adata.var.index.tolist()
