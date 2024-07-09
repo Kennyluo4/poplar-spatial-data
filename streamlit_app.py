@@ -41,6 +41,9 @@ st.write('Please select the plot type (UMAP or spatial), and gene ID for the plo
 plot_type = st.sidebar.selectbox('Select plot type', ['UMAP', 'Spatial'])
 gene_name = st.sidebar.selectbox('Enter gene name for expression plot', ['', *gene_ids])
 
+if plot_type != None:
+    st.sidebar.image('images/poplar_bud_A.tif')
+
 # Main panel
 st.title('Spatial Transcriptome Visualization')
 
