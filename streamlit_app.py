@@ -54,7 +54,7 @@ def main():
     # use from() if want to add a Submit button before change everything
     # with st.sidebar.form():           
     
-    st.sidebar.image('images/BioPoplar_Logo2.png', width=True)
+    st.sidebar.image('images/BioPoplar_Logo2.png', width="stretch")
     st.sidebar.header('Plot Configuration')
     st.sidebar.markdown('## Please select a dataset:')
     lib_type = st.sidebar.selectbox('Library Type', ['---Please choose---','scRNA', 'spRNA'])
