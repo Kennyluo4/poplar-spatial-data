@@ -104,15 +104,13 @@ def main():
         elif lib_type == 'spRNA':
             plot_type = st.sidebar.radio('Select plot type', ['Spatial UMAP', 'Spatial', 'Dotplot', 'Heatmap'], horizontal=True)
         
-        with st.sidebar.form('gene_form'):
-            st.markdown('**Enter gene names** (space or newline separated):')
-            gene_input = st.text_area('Gene names',height=100, placeholder='Example:\nPtXaTreH.01G000200.v5.1\nPtXaTreH.01G000800.v5.1')
-            submitted = st.form_submit_button('Submit')
-        
-        gene_list = []
-        if gene_input.strip():
-            gene_list = [g.strip() for g in gene_input.replace('\n', ' ').split() if g.strip()]
-        
+        # Select gene(s) from available gene IDs using a multiselect
+        if gene_ids:
+            gene_list = st.sidebar.multiselect('Select gene(s)', options=gene_ids, default=[gene_ids[0]])
+        else:
+            gene_list = []
+            st.sidebar.write('No genes available for selected dataset.')
+
         gene_name = gene_list[0] if gene_list else ''
         
             
