@@ -137,6 +137,7 @@ def main():
                 sc.pl.umap(adata, color=gene, ax=ax, show=False)
                 plt.subplots_adjust(wspace=1.2)
             st.pyplot(fig)
+            plt.close(fig)
         elif plot_type == 'Spatial UMAP':
             st.subheader('Spatial UMAP Plot')
             fig, axs = plt.subplots(len(variables_to_plot), 1, figsize=(5, 5 * len(variables_to_plot)))
@@ -146,6 +147,7 @@ def main():
                 sc.pl.umap(adata, color=gene, ax=ax, show=False)
                 plt.subplots_adjust(wspace=1.2)
             st.pyplot(fig)
+            plt.close(fig)
         elif plot_type == 'Spatial':
             st.subheader('Spatial Plot: ' + sample_name)
             if lib_type != 'spRNA':
@@ -164,14 +166,22 @@ def main():
                 fig, ax = plt.subplots(figsize=(12, 6))
                 sc.pl.dotplot(adata, gene_list, groupby='seurat_clusters', ax=ax)
                 st.pyplot(fig)
+                plt.close(fig)
             else:
                 st.error(':point_left: Please enter gene names in the form')
         elif plot_type == 'Heatmap':
             st.markdown('**Heatmap**')
             if gene_list:
-                fig, ax = plt.subplots(figsize=(12, 8))
-                sc.pl.heatmap(adata, gene_list, groupby='seurat_clusters', ax=ax)
+                hm = sc.pl.heatmap(
+                adata, 
+                gene_list, 
+                groupby='seurat_clusters', 
+                show=False, 
+                swap_axes=True)
+                fig = plt.gcf()
+                fig.set_size_inches(12, 8)
                 st.pyplot(fig)
+                plt.close(fig)
             else:
                 st.error(':point_left: Please enter gene names in the form')
                 
