@@ -120,18 +120,15 @@ def main():
     
     ## check if sample was selected:
     if sample_name and sample_name != '---Please choose---':
-
-        
         # selected gene for plot
         variables_to_plot = ['seurat_clusters']        ## cell typs not for Violin plot
         if gene_name:
             variables_to_plot.append(gene_name)
         # st.markdown('Selected gene `%s`' % gene_name)
-        
         if plot_type == 'UMAP':
             st.subheader('UMAP Plot')
             fig, axs = plt.subplots(len(variables_to_plot), 1, figsize=(5, 5 * len(variables_to_plot)))
-            if len(variables_to_plot) == 1:
+            if len(variables_to_plot) >= 1:
                 axs = [axs]
             for ax, gene in zip(axs, variables_to_plot):
                 sc.pl.umap(adata, color=gene, ax=ax, show=False)
