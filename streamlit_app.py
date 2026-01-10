@@ -39,12 +39,12 @@ def main():
         'scRNA_Leaf_5': 'sobj_Leaf_5_slim.h5ad',
         'scRNA_Primary_stem': 'sobj_Primary_stem_slim.h5ad',
         'scRNA_Secondary_stem': 'sobj_Secondary_stem_slim.h5ad',
-        'spRNA_SAM': 'sobj_SAM_slim.h5ad'
+        'scRNA_SAM': 'sobj_SAM_slim.h5ad'
     }
     
     # Organize tissues by library type
     tissues_by_lib = {
-        'scRNA': ['Leaf_1', 'Leaf_3', 'Leaf_5', 'Primary_stem', 'Secondary_stem'],
+        'scRNA': ['Leaf_1', 'Leaf_3', 'Leaf_5', 'Primary_stem', 'Secondary_stem','SAM'],
         'spRNA': ['SAM']
     }
         
@@ -127,12 +127,20 @@ def main():
         # st.markdown('Selected gene `%s`' % gene_name)
         if plot_type == 'UMAP':
             st.subheader('UMAP Plot')
-            fig, axs = plt.subplots(len(variables_to_plot), 1, figsize=(5, 5 * len(variables_to_plot)))
-            if len(variables_to_plot) >= 1:
-                axs = [axs]
-            for ax, gene in zip(axs, variables_to_plot):
+            # 1. Create the figure and axes array
+            fig, axs = plt.subplots(len(variables_to_plot), 1, figsize=(6, 5 * len(variables_to_plot)))
+            # 2. Handle the case where there is only 1 plot 
+            # (plt.subplots returns a single object if 1x1, but an array if >1)
+            if len(variables_to_plot) == 1:
+                axes_to_use = [axs]
+            else:
+                axes_to_use = axs.flatten() # This ensures we can loop through them easily
+            # 3. Zip and plot
+            for ax, gene in zip(axes_to_use, variables_to_plot):
                 sc.pl.umap(adata, color=gene, ax=ax, show=False)
-                plt.subplots_adjust(wspace=1.2)
+                # Optional: tighten layout to prevent label overlap
+                ax.set_title(f"Expression: {gene}") 
+            plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
         elif plot_type == 'Spatial UMAP':
